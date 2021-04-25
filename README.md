@@ -1,2 +1,8 @@
 # meal-plan-optimizer
-2020–2021 Combinatorial Decision Making and Optimization project for the Master Degree in Artificial Intelligence at Alma Mater Studiorum – Università di Bologna
+
+The aim of this project is to develop a meal plan optimizer using integer programming.
+
+
+## Packages
+
+`python 3.9.0`
