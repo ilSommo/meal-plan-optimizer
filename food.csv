@@ -1,0 +1,17 @@
+Food,Category,Cost,Energy,Fat,Saturates,Carbohydrates,Sugars,Protein
+Rice,Cereal,2,130,0.3,0.1,28,0.1,2.7
+Apple,Fruit,1,52,0.3,0,14,10,0.3
+Tomato,Vegetable,1,18,0.3,0,3.9,2.6,0.9
+Chicken,Meat,2,239,14,3.8,0,0,27
+Salmon,Fish,17,208,13,3.1,0,0,20
+Egg,Egg,1.5,155,11,3.3,1.1,1.1,13
+Bean,Legume,18,347,1.2,0.2,63,2.1,21
+Milk,Dairy,1,42,1,0.6,5,5,3.4
+Oil,Fat,8,824,92,16,0,0,0
+Onion,Vegetable,0.3,40,0.1,0,9,4.2,1.1
+Butter,Fat,4,717,81,51,0.1,0.1,0.9
+Parmesan,Dairy,10,431,29,17,4.1,0.9,38
+Cream,Dairy,4,196,19,12,3.7,0.1,2.7
+Date,Fruit,20,282,0.4,0,75,63,2.5
+Saffron,Other,25000,0,0,0,0,0,0
+Wine,Other,5,0,0,0,0,0,0
