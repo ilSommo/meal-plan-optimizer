@@ -25,6 +25,10 @@ def branch_and_bound(prob):
                     break
             if flag and prob.sense==1:
                 if obj < ub:
+                    print("\n"+str(obj))
+                    for v in var:
+                        if v.varValue != 0:
+                            print(v, v.varValue)
                     ub = obj
                     best=subprob.copy()
                     for node in unexpanded:
