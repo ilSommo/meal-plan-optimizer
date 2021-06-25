@@ -3,7 +3,9 @@
 sed -i '' 's/__version__ = .*/__version__ = '\'$1\''/' meal_plan_optimizer.py
 sed -i '' 's/__version__ = .*/__version__ = '\'$1\''\\n",/' meal-plan-optimizer.ipynb
 
-doxygen meal_plan_optimizer
+pip freeze > requirements.txt
+
+doxygen *
 cd latex
 make
 cd ..
