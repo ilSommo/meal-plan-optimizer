@@ -1,4 +1,4 @@
-__version__ = '1.0.0-beta'
+__version__ = '1.0.0-rc'
 __author__ = 'Martino Pulici'
 
 
@@ -75,7 +75,8 @@ def branch_and_bound(prob):
                         break
                         # for cycle broken after first non-integer variable
                 if flag and sense == 1 and obj < ub:
-                    # entered in minimization problems if all variables are integer and the objective is improved
+                    # entered in minimization problems if all variables are
+                    # integer and the objective is improved
                     print("\n" + str(obj))
                     for v in var:
                         if v.varValue != 0:
@@ -85,7 +86,8 @@ def branch_and_bound(prob):
                     best = subprob.copy()
                     # best problem updated
                 if flag and sense == -1 and obj > lb:
-                    # entered in maximization problems if all variables are integer and the objective is improved
+                    # entered in maximization problems if all variables are
+                    # integer and the objective is improved
                     print("\n" + str(obj))
                     for v in var:
                         if v.varValue != 0:
