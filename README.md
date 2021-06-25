@@ -4,7 +4,8 @@ The aim of this project is to develop a meal plan optimizer using integer progra
 
 ## Packages
 
-`python 3.9.0`
+`python 3.8.5`
 
-`pandas 1.2.4`  
-`PuLP 2.4`
+`jupyter 1.0.0`  
+`pandas 1.1.5`  
+`pulp 2.4`
