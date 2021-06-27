@@ -1,10 +1,8 @@
 amply==0.1.4
 appnope==0.1.2
 argon2-cffi==20.1.0
-astunparse==1.6.3
 async-generator==1.10
 attrs==21.2.0
-autopep8==1.5.7
 backcall==0.2.0
 bleach==3.3.0
 cffi==1.14.5
@@ -13,7 +11,7 @@ defusedxml==0.7.1
 docutils==0.17.1
 entrypoints==0.3
 ipykernel==5.5.5
-ipython==7.24.1
+ipython==7.25.0
 ipython-genutils==0.2.0
 ipywidgets==7.6.3
 jedi==0.18.0
@@ -38,14 +36,12 @@ packaging==20.9
 pandas==1.1.5
 pandocfilters==1.4.3
 parso==0.8.2
-pdoc==7.1.1
 pexpect==4.8.0
 pickleshare==0.7.5
 prometheus-client==0.11.0
 prompt-toolkit==3.0.19
 ptyprocess==0.7.0
 PuLP==2.4
-pycodestyle==2.7.0
 pycparser==2.20
 Pygments==2.9.0
 pyparsing==2.4.7
@@ -59,7 +55,6 @@ Send2Trash==1.7.1
 six==1.16.0
 terminado==0.10.1
 testpath==0.5.0
-toml==0.10.2
 tornado==6.1
 traitlets==5.0.5
 wcwidth==0.2.5
