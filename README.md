@@ -61,4 +61,4 @@ To browse documentation, open `docs/index.html` with a web browser.
 
 `jupyter 1.0.0`  
 `pandas 1.1.5`  
-`pulp 2.4`
+`PuLP 2.4`
