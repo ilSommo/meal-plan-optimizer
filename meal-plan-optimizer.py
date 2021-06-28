@@ -12,11 +12,11 @@ from meal_plan_optimizer.branch_and_bound import *
 
 # nutrient daily limits
 NUTRIENT_LIMITS = {'Energy': 2000,
-                   'Fat': 70,
+                   'Fats': 70,
                    'Saturates': 20,
                    'Carbohydrates': 260,
                    'Sugars': 90,
-                   'Protein': 50
+                   'Proteins': 50
                    }
 
 TOLERANCE = 0.33
@@ -152,6 +152,8 @@ for i in range(0, len(probs)):
     # last problem solved
     int_probs[-1].solve(pl.PULP_CBC_CMD(msg=0))
 
+print("\n" + "\n")
+
 print("TOTAL COST = " +
       "{0:.2f}".format(pulp.value(sum([n.objective for n in int_probs]))) +
       " €")
@@ -164,3 +166,5 @@ for day in ["_Day_1_", "_Day_2_", "_Day_3_", "_Day_4_", "_Day_5_"]:
         for v in prob.variables():
             if v.varValue and day in v.name:
                 print(v.name[11:] + " = {0:.0f}".format(v.varValue))
+
+print()

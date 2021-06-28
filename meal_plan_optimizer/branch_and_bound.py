@@ -77,20 +77,20 @@ def branch_and_bound(prob):
                 # entered in minimization problems if all variables are integer
                 # and the objective is improved
                 if flag and sense == 1 and obj < ub:
-                    print(str(obj))
+                    print("\n" + str(obj))
                     for v in var:
                         if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue) + "\n")
+                            print(str(v) + " = {0:.0f}".format(v.varValue))
                     # upper bound updated
                     ub = obj
                     # best problem updated
                     best = subprob.copy()
                 # entered in maximization problems if all variables are
                 if flag and sense == -1 and obj > lb:
-                    print(str(obj))
+                    print("\n" + str(obj))
                     for v in var:
                         if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue) + "\n")
+                            print(str(v) + " = {0:.0f}".format(v.varValue))
                     # lower bound updated
                     lb = obj
                     # best problem updated
