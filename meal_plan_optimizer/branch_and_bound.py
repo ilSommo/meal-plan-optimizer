@@ -45,7 +45,7 @@ def branch_and_bound(prob):
             # subproblem to solve
             subprob = node[0]
             # subproblem solving attempt
-            subsol = subprob.solve()
+            subsol = subprob.solve(pl.PULP_CBC_CMD(msg=0))
             # entered if solution found
             if subsol == 1:
                 # subproblem objective
@@ -77,20 +77,20 @@ def branch_and_bound(prob):
                 # entered in minimization problems if all variables are integer
                 # and the objective is improved
                 if flag and sense == 1 and obj < ub:
-                    print("\n" + str(obj))
+                    print(str(obj))
                     for v in var:
                         if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue))
+                            print(str(v) + " = {0:.0f}".format(v.varValue) + "\n")
                     # upper bound updated
                     ub = obj
                     # best problem updated
                     best = subprob.copy()
                 # entered in maximization problems if all variables are
                 if flag and sense == -1 and obj > lb:
-                    print("\n" + str(obj))
+                    print(str(obj))
                     for v in var:
                         if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue))
+                            print(str(v) + " = {0:.0f}".format(v.varValue) + "\n")
                     # lower bound updated
                     lb = obj
                     # best problem updated

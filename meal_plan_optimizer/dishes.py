@@ -2,7 +2,7 @@ __version__ = '1.0.1'
 __author__ = 'Martino Pulici'
 
 
-class dish:
+class Dish:
     """
     Class containing dish attributes.
 
