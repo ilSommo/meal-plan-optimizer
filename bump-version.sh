@@ -1,7 +1,6 @@
 #!/bin/bash
 
 sed -i '' 's/__version__ = .*/__version__ = '\'$1\''/' **/*.py
-sed -i '' 's/__version__ = .*/__version__ = '\'$1\''\\n",/' *.ipynb
 
 pip freeze > requirements.txt
 

@@ -51,7 +51,7 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0.1&#39;</span>
+            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.1.0&#39;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Martino Pulici&#39;</span>
 
 
@@ -98,7 +98,7 @@
             <span class="c1"># subproblem to solve</span>
             <span class="n">subprob</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># subproblem solving attempt</span>
-            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">PULP_CBC_CMD</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
             <span class="c1"># entered if solution found</span>
             <span class="k">if</span> <span class="n">subsol</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># subproblem objective</span>
@@ -202,7 +202,7 @@
             <span class="c1"># subproblem to solve</span>
             <span class="n">subprob</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># subproblem solving attempt</span>
-            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">PULP_CBC_CMD</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
             <span class="c1"># entered if solution found</span>
             <span class="k">if</span> <span class="n">subsol</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># subproblem objective</span>
