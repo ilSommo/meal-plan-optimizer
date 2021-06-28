@@ -59,6 +59,5 @@ To browse documentation, open `docs/index.html` with a web browser.
 
 `python 3.8.5`
 
-`jupyter 1.0.0`  
 `pandas 1.1.5`  
 `PuLP 2.4`

@@ -1,4 +1,4 @@
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 __author__ = 'Martino Pulici'
 
 
@@ -45,7 +45,7 @@ def branch_and_bound(prob):
             # subproblem to solve
             subprob = node[0]
             # subproblem solving attempt
-            subsol = subprob.solve()
+            subsol = subprob.solve(pl.PULP_CBC_CMD(msg=0))
             # entered if solution found
             if subsol == 1:
                 # subproblem objective
