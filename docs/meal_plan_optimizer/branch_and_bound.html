@@ -54,7 +54,7 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.2.0&#39;</span>
+            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.2.1&#39;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Martino Pulici&#39;</span>
 
 
@@ -141,7 +141,8 @@
                     <span class="n">ub</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="c1"># entered in maximization problems if all variables are</span>
+                <span class="c1"># entered in maximization problems if all variables are integer</span>
+                <span class="c1"># and the objective is improved</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&gt;</span> <span class="n">lb</span><span class="p">:</span>
                     <span class="c1"># lower bound updated</span>
                     <span class="n">lb</span> <span class="o">=</span> <span class="n">obj</span>
@@ -397,7 +398,8 @@
                     <span class="n">ub</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="c1"># entered in maximization problems if all variables are</span>
+                <span class="c1"># entered in maximization problems if all variables are integer</span>
+                <span class="c1"># and the objective is improved</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&gt;</span> <span class="n">lb</span><span class="p">:</span>
                     <span class="c1"># lower bound updated</span>
                     <span class="n">lb</span> <span class="o">=</span> <span class="n">obj</span>
