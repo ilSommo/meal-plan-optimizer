@@ -33,6 +33,9 @@
             <li>
                     <a class="function" href="#branch_and_bound">branch_and_bound</a>
             </li>
+            <li>
+                    <a class="function" href="#meal_plan_optimizer_pulp">meal_plan_optimizer_pulp</a>
+            </li>
     </ul>
 
 
@@ -51,13 +54,17 @@
                 
                         <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.1.0&#39;</span>
+            <div class="codehilite"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.2.0&#39;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Martino Pulici&#39;</span>
 
 
+<span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">pulp</span> <span class="k">as</span> <span class="nn">pl</span>
+
+<span class="kn">from</span> <span class="nn">meal_plan_optimizer.dishes</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <span class="k">def</span> <span class="nf">branch_and_bound</span><span class="p">(</span><span class="n">prob</span><span class="p">):</span>
@@ -98,7 +105,7 @@
             <span class="c1"># subproblem to solve</span>
             <span class="n">subprob</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># subproblem solving attempt</span>
-            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">PULP_CBC_CMD</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
             <span class="c1"># entered if solution found</span>
             <span class="k">if</span> <span class="n">subsol</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># subproblem objective</span>
@@ -130,25 +137,177 @@
                 <span class="c1"># entered in minimization problems if all variables are integer</span>
                 <span class="c1"># and the objective is improved</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&lt;</span> <span class="n">ub</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
-                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">var</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">varValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = </span><span class="si">{0:.0f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">varValue</span><span class="p">))</span>
                     <span class="c1"># upper bound updated</span>
                     <span class="n">ub</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="c1"># entered in maximization problems if all variables are</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&gt;</span> <span class="n">lb</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
-                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">var</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">varValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = </span><span class="si">{0:.0f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">varValue</span><span class="p">))</span>
                     <span class="c1"># lower bound updated</span>
                     <span class="n">lb</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">best</span>
+
+
+<span class="k">def</span> <span class="nf">meal_plan_optimizer_pulp</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs integer optimization using pulp.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int_probs : list</span>
+<span class="sd">        Solved pulp problems.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># nutrient daily limits</span>
+    <span class="n">NUTRIENT_LIMITS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Energy&#39;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+                       <span class="s1">&#39;Fats&#39;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
+                       <span class="s1">&#39;Saturates&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                       <span class="s1">&#39;Carbohydrates&#39;</span><span class="p">:</span> <span class="mi">260</span><span class="p">,</span>
+                       <span class="s1">&#39;Sugars&#39;</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+                       <span class="s1">&#39;Proteins&#39;</span><span class="p">:</span> <span class="mi">50</span>
+                       <span class="p">}</span>
+
+    <span class="n">TOLERANCE</span> <span class="o">=</span> <span class="mf">0.33</span>
+
+    <span class="c1"># ingredient nutrients file</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/food.csv&quot;</span><span class="p">)</span>
+
+    <span class="c1"># dishes file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/dish.csv&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># dishes strings list</span>
+        <span class="n">dishes_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+
+    <span class="c1"># unlimited dishes file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/unlimited.txt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># unlimited dishes list</span>
+        <span class="n">unlimited_dishes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># list of food names</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Food&#39;</span><span class="p">])</span>
+    <span class="c1"># dictionary of food costs</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cost&#39;</span><span class="p">]))</span>
+
+    <span class="c1"># dictionary of food nutrients</span>
+    <span class="n">nutrients</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># cycle on foods</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)):</span>
+        <span class="c1"># dictionary of nutrients for specific food</span>
+        <span class="n">nutrients</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># cycle on nutrient limits</span>
+        <span class="k">for</span> <span class="n">nutrient</span> <span class="ow">in</span> <span class="n">NUTRIENT_LIMITS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># nutrient quantities multiplied by 10 to convert to kg</span>
+            <span class="n">nutrients</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="n">nutrient</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">nutrient</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
+
+    <span class="c1"># dish names list</span>
+    <span class="n">dishes_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># dishes list</span>
+    <span class="n">dishes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># cycle on dishes strings list</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dishes_list</span><span class="p">)):</span>
+        <span class="c1"># current dish</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">dishes_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># dish added to dishes list</span>
+        <span class="n">dishes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Dish</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">))</span>
+        <span class="c1"># dish name appended to list</span>
+        <span class="n">dishes_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># cycle on dish ingredients</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># current ingredient</span>
+            <span class="n">ingredient</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="c1"># current quantity devided by 1000 to convert to kg</span>
+            <span class="n">quantity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1000</span>
+            <span class="c1"># current ingredient cost added to dish cost</span>
+            <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">cost</span> <span class="o">+=</span> <span class="n">costs</span><span class="p">[</span><span class="n">ingredient</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantity</span>
+
+            <span class="c1"># cycle on ingredient nutrients</span>
+            <span class="k">for</span> <span class="n">nut</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nutrients</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="c1"># ingredient nutrient added to dish nutrient</span>
+                <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">+=</span> <span class="n">nutrients</span><span class="p">[</span><span class="n">ingredient</span><span class="p">][</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantity</span>
+
+    <span class="n">food_day_1</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_1&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_2</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_2&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_3</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_3&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_4</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_4&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_5</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_5&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+
+    <span class="c1"># LpVariable list</span>
+    <span class="n">foods</span> <span class="o">=</span> <span class="p">[</span><span class="n">food_day_1</span><span class="p">,</span> <span class="n">food_day_2</span><span class="p">,</span> <span class="n">food_day_3</span><span class="p">,</span> <span class="n">food_day_4</span><span class="p">,</span> <span class="n">food_day_5</span><span class="p">]</span>
+
+    <span class="n">prob_day_1</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_1&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_2</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_2&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_3</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_3&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_4</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_4&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_5</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_5&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+
+    <span class="c1"># LpProblems list</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="n">prob_day_1</span><span class="p">,</span> <span class="n">prob_day_2</span><span class="p">,</span> <span class="n">prob_day_3</span><span class="p">,</span> <span class="n">prob_day_4</span><span class="p">,</span> <span class="n">prob_day_5</span><span class="p">]</span>
+
+    <span class="c1"># cycle on problems</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">)):</span>
+        <span class="c1"># objective added to problem</span>
+        <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">cost</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                             <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span>
+
+        <span class="c1"># cycle on nutrients</span>
+        <span class="k">for</span> <span class="n">nut</span> <span class="ow">in</span> <span class="n">NUTRIENT_LIMITS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># minimum nutrient quantity constraint added to problem</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                                 <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">TOLERANCE</span><span class="p">)</span>
+            <span class="c1"># maximum nutrient quantity constraint added to problem</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                                 <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">TOLERANCE</span><span class="p">)</span>
+        <span class="c1"># cycle on dishes</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">())):</span>
+            <span class="c1"># maximum number of servings for dish added</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span>
+
+    <span class="c1"># integer problems list</span>
+    <span class="n">int_probs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># cycle on problems</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">)):</span>
+
+        <span class="c1"># cycle on previous problems</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+
+            <span class="c1"># cycle on previous problem dishes</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">())):</span>
+
+                <span class="c1"># entered if dish has already been chosen for a previous problem</span>
+                <span class="c1"># and it is not an unlimited dish</span>
+                <span class="k">if</span> <span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">varValue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unlimited_dish</span><span class="p">(</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]),</span> <span class="n">unlimited_dishes</span><span class="p">):</span>
+
+                    <span class="c1"># dish quantity set to 0</span>
+                    <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+                <span class="c1"># entered if dish is already chosen for one of the last two</span>
+                <span class="c1"># problems and it is an unlimited dish</span>
+                <span class="k">if</span> <span class="p">((</span><span class="n">j</span> <span class="o">==</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">j</span> <span class="o">==</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span> <span class="ow">and</span> <span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span>
+                        <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">varValue</span> <span class="ow">and</span> <span class="n">unlimited_dish</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]),</span> <span class="n">unlimited_dishes</span><span class="p">):</span>
+
+                    <span class="c1"># dish quantity set to 0</span>
+                    <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="c1"># integer problem added to list</span>
+        <span class="n">int_probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1"># last problem solved</span>
+        <span class="n">int_probs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">int_probs</span>
 </pre></div>
 
         </details>
@@ -202,7 +361,7 @@
             <span class="c1"># subproblem to solve</span>
             <span class="n">subprob</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># subproblem solving attempt</span>
-            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">PULP_CBC_CMD</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">subsol</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
             <span class="c1"># entered if solution found</span>
             <span class="k">if</span> <span class="n">subsol</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># subproblem objective</span>
@@ -234,20 +393,12 @@
                 <span class="c1"># entered in minimization problems if all variables are integer</span>
                 <span class="c1"># and the objective is improved</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&lt;</span> <span class="n">ub</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
-                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">var</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">varValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = </span><span class="si">{0:.0f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">varValue</span><span class="p">))</span>
                     <span class="c1"># upper bound updated</span>
                     <span class="n">ub</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="n">subprob</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="c1"># entered in maximization problems if all variables are</span>
                 <span class="k">if</span> <span class="n">flag</span> <span class="ow">and</span> <span class="n">sense</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">obj</span> <span class="o">&gt;</span> <span class="n">lb</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
-                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">var</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">varValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = </span><span class="si">{0:.0f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">varValue</span><span class="p">))</span>
                     <span class="c1"># lower bound updated</span>
                     <span class="n">lb</span> <span class="o">=</span> <span class="n">obj</span>
                     <span class="c1"># best problem updated</span>
@@ -271,6 +422,190 @@ Real value optimization problem to solve using integer programming.</li>
 <ul>
 <li><strong>best</strong> (pulp.pulp.LpProblem):
 Integer value.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="meal_plan_optimizer_pulp">
+                            <div class="attr function"><a class="headerlink" href="#meal_plan_optimizer_pulp">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">meal_plan_optimizer_pulp</span><span class="signature">()</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">meal_plan_optimizer_pulp</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs integer optimization using pulp.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int_probs : list</span>
+<span class="sd">        Solved pulp problems.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># nutrient daily limits</span>
+    <span class="n">NUTRIENT_LIMITS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Energy&#39;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+                       <span class="s1">&#39;Fats&#39;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
+                       <span class="s1">&#39;Saturates&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                       <span class="s1">&#39;Carbohydrates&#39;</span><span class="p">:</span> <span class="mi">260</span><span class="p">,</span>
+                       <span class="s1">&#39;Sugars&#39;</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+                       <span class="s1">&#39;Proteins&#39;</span><span class="p">:</span> <span class="mi">50</span>
+                       <span class="p">}</span>
+
+    <span class="n">TOLERANCE</span> <span class="o">=</span> <span class="mf">0.33</span>
+
+    <span class="c1"># ingredient nutrients file</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/food.csv&quot;</span><span class="p">)</span>
+
+    <span class="c1"># dishes file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/dish.csv&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># dishes strings list</span>
+        <span class="n">dishes_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+
+    <span class="c1"># unlimited dishes file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/unlimited.txt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="c1"># unlimited dishes list</span>
+        <span class="n">unlimited_dishes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># list of food names</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Food&#39;</span><span class="p">])</span>
+    <span class="c1"># dictionary of food costs</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cost&#39;</span><span class="p">]))</span>
+
+    <span class="c1"># dictionary of food nutrients</span>
+    <span class="n">nutrients</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># cycle on foods</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)):</span>
+        <span class="c1"># dictionary of nutrients for specific food</span>
+        <span class="n">nutrients</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># cycle on nutrient limits</span>
+        <span class="k">for</span> <span class="n">nutrient</span> <span class="ow">in</span> <span class="n">NUTRIENT_LIMITS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># nutrient quantities multiplied by 10 to convert to kg</span>
+            <span class="n">nutrients</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="n">nutrient</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">nutrient</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
+
+    <span class="c1"># dish names list</span>
+    <span class="n">dishes_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># dishes list</span>
+    <span class="n">dishes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># cycle on dishes strings list</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dishes_list</span><span class="p">)):</span>
+        <span class="c1"># current dish</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">dishes_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># dish added to dishes list</span>
+        <span class="n">dishes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Dish</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">))</span>
+        <span class="c1"># dish name appended to list</span>
+        <span class="n">dishes_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># cycle on dish ingredients</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># current ingredient</span>
+            <span class="n">ingredient</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="c1"># current quantity devided by 1000 to convert to kg</span>
+            <span class="n">quantity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1000</span>
+            <span class="c1"># current ingredient cost added to dish cost</span>
+            <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">cost</span> <span class="o">+=</span> <span class="n">costs</span><span class="p">[</span><span class="n">ingredient</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantity</span>
+
+            <span class="c1"># cycle on ingredient nutrients</span>
+            <span class="k">for</span> <span class="n">nut</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nutrients</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="c1"># ingredient nutrient added to dish nutrient</span>
+                <span class="n">dishes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">+=</span> <span class="n">nutrients</span><span class="p">[</span><span class="n">ingredient</span><span class="p">][</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantity</span>
+
+    <span class="n">food_day_1</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_1&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_2</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_2&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_3</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_3&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_4</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_4&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+    <span class="n">food_day_5</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span>
+        <span class="s2">&quot;Food_Day_5&quot;</span><span class="p">,</span> <span class="n">dishes_labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+
+    <span class="c1"># LpVariable list</span>
+    <span class="n">foods</span> <span class="o">=</span> <span class="p">[</span><span class="n">food_day_1</span><span class="p">,</span> <span class="n">food_day_2</span><span class="p">,</span> <span class="n">food_day_3</span><span class="p">,</span> <span class="n">food_day_4</span><span class="p">,</span> <span class="n">food_day_5</span><span class="p">]</span>
+
+    <span class="n">prob_day_1</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_1&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_2</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_2&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_3</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_3&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_4</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_4&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+    <span class="n">prob_day_5</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;Day_5&quot;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+
+    <span class="c1"># LpProblems list</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="n">prob_day_1</span><span class="p">,</span> <span class="n">prob_day_2</span><span class="p">,</span> <span class="n">prob_day_3</span><span class="p">,</span> <span class="n">prob_day_4</span><span class="p">,</span> <span class="n">prob_day_5</span><span class="p">]</span>
+
+    <span class="c1"># cycle on problems</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">)):</span>
+        <span class="c1"># objective added to problem</span>
+        <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">cost</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                             <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span>
+
+        <span class="c1"># cycle on nutrients</span>
+        <span class="k">for</span> <span class="n">nut</span> <span class="ow">in</span> <span class="n">NUTRIENT_LIMITS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># minimum nutrient quantity constraint added to problem</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                                 <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">TOLERANCE</span><span class="p">)</span>
+            <span class="c1"># maximum nutrient quantity constraint added to problem</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pl</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">dish</span><span class="o">.</span><span class="n">nutrients</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="n">foods</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">dish</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                                 <span class="k">for</span> <span class="n">dish</span> <span class="ow">in</span> <span class="n">dishes</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">NUTRIENT_LIMITS</span><span class="p">[</span><span class="n">nut</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">TOLERANCE</span><span class="p">)</span>
+        <span class="c1"># cycle on dishes</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">())):</span>
+            <span class="c1"># maximum number of servings for dish added</span>
+            <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span>
+
+    <span class="c1"># integer problems list</span>
+    <span class="n">int_probs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># cycle on problems</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">)):</span>
+
+        <span class="c1"># cycle on previous problems</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+
+            <span class="c1"># cycle on previous problem dishes</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">())):</span>
+
+                <span class="c1"># entered if dish has already been chosen for a previous problem</span>
+                <span class="c1"># and it is not an unlimited dish</span>
+                <span class="k">if</span> <span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">varValue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unlimited_dish</span><span class="p">(</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]),</span> <span class="n">unlimited_dishes</span><span class="p">):</span>
+
+                    <span class="c1"># dish quantity set to 0</span>
+                    <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+                <span class="c1"># entered if dish is already chosen for one of the last two</span>
+                <span class="c1"># problems and it is an unlimited dish</span>
+                <span class="k">if</span> <span class="p">((</span><span class="n">j</span> <span class="o">==</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">j</span> <span class="o">==</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span> <span class="ow">and</span> <span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span>
+                        <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">varValue</span> <span class="ow">and</span> <span class="n">unlimited_dish</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">int_probs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]),</span> <span class="n">unlimited_dishes</span><span class="p">):</span>
+
+                    <span class="c1"># dish quantity set to 0</span>
+                    <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">()[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="c1"># integer problem added to list</span>
+        <span class="n">int_probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1"># last problem solved</span>
+        <span class="n">int_probs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">int_probs</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Performs integer optimization using pulp.</p>
+
+<h6 id="returns">Returns</h6>
+
+<ul>
+<li><strong>int_probs</strong> (list):
+Solved pulp problems.</li>
 </ul>
 </div>
 

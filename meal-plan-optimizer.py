@@ -5,7 +5,7 @@ __author__ = 'Martino Pulici'
 import csv
 
 import pandas as pd
-import pulp
+import pulp as pl
 
 from meal_plan_optimizer.dishes import *
 from meal_plan_optimizer.branch_and_bound import *
@@ -82,20 +82,20 @@ for i in range(len(dishes_list)):
             # ingredient nutrient added to dish nutrient
             dishes[i].nutrients[nut] += nutrients[ingredient][nut] * quantity
 
-food_day_1 = pulp.LpVariable.dicts("Food_Day_1", dishes_labels, 0)
-food_day_2 = pulp.LpVariable.dicts("Food_Day_2", dishes_labels, 0)
-food_day_3 = pulp.LpVariable.dicts("Food_Day_3", dishes_labels, 0)
-food_day_4 = pulp.LpVariable.dicts("Food_Day_4", dishes_labels, 0)
-food_day_5 = pulp.LpVariable.dicts("Food_Day_5", dishes_labels, 0)
+food_day_1 = pl.LpVariable.dicts("Food_Day_1", dishes_labels, 0)
+food_day_2 = pl.LpVariable.dicts("Food_Day_2", dishes_labels, 0)
+food_day_3 = pl.LpVariable.dicts("Food_Day_3", dishes_labels, 0)
+food_day_4 = pl.LpVariable.dicts("Food_Day_4", dishes_labels, 0)
+food_day_5 = pl.LpVariable.dicts("Food_Day_5", dishes_labels, 0)
 
 # LpVariable list
 foods = [food_day_1, food_day_2, food_day_3, food_day_4, food_day_5]
 
-prob_day_1 = pulp.LpProblem("Day_1", pulp.LpMinimize)
-prob_day_2 = pulp.LpProblem("Day_2", pulp.LpMinimize)
-prob_day_3 = pulp.LpProblem("Day_3", pulp.LpMinimize)
-prob_day_4 = pulp.LpProblem("Day_4", pulp.LpMinimize)
-prob_day_5 = pulp.LpProblem("Day_5", pulp.LpMinimize)
+prob_day_1 = pl.LpProblem("Day_1", pl.LpMinimize)
+prob_day_2 = pl.LpProblem("Day_2", pl.LpMinimize)
+prob_day_3 = pl.LpProblem("Day_3", pl.LpMinimize)
+prob_day_4 = pl.LpProblem("Day_4", pl.LpMinimize)
+prob_day_5 = pl.LpProblem("Day_5", pl.LpMinimize)
 
 # LpProblems list
 probs = [prob_day_1, prob_day_2, prob_day_3, prob_day_4, prob_day_5]
@@ -103,17 +103,17 @@ probs = [prob_day_1, prob_day_2, prob_day_3, prob_day_4, prob_day_5]
 # cycle on problems
 for i in range(len(probs)):
     # objective added to problem
-    probs[i] += pulp.lpSum([dish.cost * foods[i][dish.name]
-                           for dish in dishes])
+    probs[i] += pl.lpSum([dish.cost * foods[i][dish.name]
+                          for dish in dishes])
 
     # cycle on nutrients
     for nut in NUTRIENT_LIMITS.keys():
         # minimum nutrient quantity constraint added to problem
-        probs[i] += pulp.lpSum([dish.nutrients[nut] * foods[i][dish.name]
-                               for dish in dishes]) >= NUTRIENT_LIMITS[nut] * (1 - TOLERANCE)
+        probs[i] += pl.lpSum([dish.nutrients[nut] * foods[i][dish.name]
+                             for dish in dishes]) >= NUTRIENT_LIMITS[nut] * (1 - TOLERANCE)
         # maximum nutrient quantity constraint added to problem
-        probs[i] += pulp.lpSum([dish.nutrients[nut] * foods[i][dish.name]
-                               for dish in dishes]) <= NUTRIENT_LIMITS[nut] * (1 + TOLERANCE)
+        probs[i] += pl.lpSum([dish.nutrients[nut] * foods[i][dish.name]
+                             for dish in dishes]) <= NUTRIENT_LIMITS[nut] * (1 + TOLERANCE)
     # cycle on dishes
     for j in range(len(probs[i].variables())):
         # maximum number of servings for dish added
@@ -150,12 +150,14 @@ for i in range(0, len(probs)):
     # integer problem added to list
     int_probs.append(branch_and_bound(probs[i]))
     # last problem solved
-    int_probs[-1].solve(pl.PULP_CBC_CMD(msg=0))
+    int_probs[-1].solve()
 
-print("\n" + "\n")
+int_probs_pulp = meal_plan_optimizer_pulp()
+
+print()
 
 print("TOTAL COST = " +
-      "{0:.2f}".format(pulp.value(sum([n.objective for n in int_probs]))) +
+      "{0:.2f}".format(pl.value(sum([n.objective for n in int_probs]))) +
       " €")
 
 for day in ["_Day_1_", "_Day_2_", "_Day_3_", "_Day_4_", "_Day_5_"]:
@@ -163,6 +165,21 @@ for day in ["_Day_1_", "_Day_2_", "_Day_3_", "_Day_4_", "_Day_5_"]:
     print(day[1:6].upper())
 
     for prob in int_probs:
+        for v in prob.variables():
+            if v.varValue and day in v.name:
+                print(v.name[11:] + " = {0:.0f}".format(v.varValue))
+
+print("\n" + "\n")
+
+print("TOTAL COST PULP = " +
+      "{0:.2f}".format(pl.value(sum([n.objective for n in int_probs_pulp]))) +
+      " €")
+
+for day in ["_Day_1_", "_Day_2_", "_Day_3_", "_Day_4_", "_Day_5_"]:
+    print()
+    print(day[1:6].upper())
+
+    for prob in int_probs_pulp:
         for v in prob.variables():
             if v.varValue and day in v.name:
                 print(v.name[11:] + " = {0:.0f}".format(v.varValue))

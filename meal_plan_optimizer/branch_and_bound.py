@@ -1,10 +1,14 @@
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __author__ = 'Martino Pulici'
 
 
+import csv
 import math
 
+import pandas as pd
 import pulp as pl
+
+from meal_plan_optimizer.dishes import *
 
 
 def branch_and_bound(prob):
@@ -45,7 +49,7 @@ def branch_and_bound(prob):
             # subproblem to solve
             subprob = node[0]
             # subproblem solving attempt
-            subsol = subprob.solve(pl.PULP_CBC_CMD(msg=0))
+            subsol = subprob.solve()
             # entered if solution found
             if subsol == 1:
                 # subproblem objective
@@ -77,22 +81,174 @@ def branch_and_bound(prob):
                 # entered in minimization problems if all variables are integer
                 # and the objective is improved
                 if flag and sense == 1 and obj < ub:
-                    print("\n" + str(obj))
-                    for v in var:
-                        if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue))
                     # upper bound updated
                     ub = obj
                     # best problem updated
                     best = subprob.copy()
                 # entered in maximization problems if all variables are
                 if flag and sense == -1 and obj > lb:
-                    print("\n" + str(obj))
-                    for v in var:
-                        if v.varValue != 0:
-                            print(str(v) + " = {0:.0f}".format(v.varValue))
                     # lower bound updated
                     lb = obj
                     # best problem updated
                     best = subprob.copy()
     return best
+
+
+def meal_plan_optimizer_pulp():
+    """
+    Performs integer optimization using pulp.
+
+    Returns
+    -------
+    int_probs : list
+        Solved pulp problems.
+
+    """
+    # nutrient daily limits
+    NUTRIENT_LIMITS = {'Energy': 2000,
+                       'Fats': 70,
+                       'Saturates': 20,
+                       'Carbohydrates': 260,
+                       'Sugars': 90,
+                       'Proteins': 50
+                       }
+
+    TOLERANCE = 0.33
+
+    # ingredient nutrients file
+    df = pd.read_csv("data/food.csv")
+
+    # dishes file
+    with open("data/dish.csv") as file:
+        reader = csv.reader(file)
+        # dishes strings list
+        dishes_list = list(reader)
+
+    # unlimited dishes file
+    with open("data/unlimited.txt") as file:
+        reader = csv.reader(file)
+        # unlimited dishes list
+        unlimited_dishes = list(reader)[0]
+
+    # list of food names
+    labels = list(df['Food'])
+    # dictionary of food costs
+    costs = dict(zip(labels, df['Cost']))
+
+    # dictionary of food nutrients
+    nutrients = {}
+
+    # cycle on foods
+    for i in range(len(labels)):
+        # dictionary of nutrients for specific food
+        nutrients[labels[i]] = {}
+
+        # cycle on nutrient limits
+        for nutrient in NUTRIENT_LIMITS.keys():
+            # nutrient quantities multiplied by 10 to convert to kg
+            nutrients[labels[i]][nutrient] = df[nutrient][i] * 10
+
+    # dish names list
+    dishes_labels = []
+    # dishes list
+    dishes = []
+
+    # cycle on dishes strings list
+    for i in range(len(dishes_list)):
+        # current dish
+        d = dishes_list[i]
+        # dish added to dishes list
+        dishes.append(Dish(d[0], NUTRIENT_LIMITS))
+        # dish name appended to list
+        dishes_labels.append(d[0])
+
+        # cycle on dish ingredients
+        for j in range(1, len(d), 2):
+            # current ingredient
+            ingredient = d[j]
+            # current quantity devided by 1000 to convert to kg
+            quantity = float(d[j + 1]) / 1000
+            # current ingredient cost added to dish cost
+            dishes[i].cost += costs[ingredient] * quantity
+
+            # cycle on ingredient nutrients
+            for nut in dishes[i].nutrients.keys():
+                # ingredient nutrient added to dish nutrient
+                dishes[i].nutrients[nut] += nutrients[ingredient][nut] * quantity
+
+    food_day_1 = pl.LpVariable.dicts(
+        "Food_Day_1", dishes_labels, 0, cat='Integer')
+    food_day_2 = pl.LpVariable.dicts(
+        "Food_Day_2", dishes_labels, 0, cat='Integer')
+    food_day_3 = pl.LpVariable.dicts(
+        "Food_Day_3", dishes_labels, 0, cat='Integer')
+    food_day_4 = pl.LpVariable.dicts(
+        "Food_Day_4", dishes_labels, 0, cat='Integer')
+    food_day_5 = pl.LpVariable.dicts(
+        "Food_Day_5", dishes_labels, 0, cat='Integer')
+
+    # LpVariable list
+    foods = [food_day_1, food_day_2, food_day_3, food_day_4, food_day_5]
+
+    prob_day_1 = pl.LpProblem("Day_1", pl.LpMinimize)
+    prob_day_2 = pl.LpProblem("Day_2", pl.LpMinimize)
+    prob_day_3 = pl.LpProblem("Day_3", pl.LpMinimize)
+    prob_day_4 = pl.LpProblem("Day_4", pl.LpMinimize)
+    prob_day_5 = pl.LpProblem("Day_5", pl.LpMinimize)
+
+    # LpProblems list
+    probs = [prob_day_1, prob_day_2, prob_day_3, prob_day_4, prob_day_5]
+
+    # cycle on problems
+    for i in range(len(probs)):
+        # objective added to problem
+        probs[i] += pl.lpSum([dish.cost * foods[i][dish.name]
+                             for dish in dishes])
+
+        # cycle on nutrients
+        for nut in NUTRIENT_LIMITS.keys():
+            # minimum nutrient quantity constraint added to problem
+            probs[i] += pl.lpSum([dish.nutrients[nut] * foods[i][dish.name]
+                                 for dish in dishes]) >= NUTRIENT_LIMITS[nut] * (1 - TOLERANCE)
+            # maximum nutrient quantity constraint added to problem
+            probs[i] += pl.lpSum([dish.nutrients[nut] * foods[i][dish.name]
+                                 for dish in dishes]) <= NUTRIENT_LIMITS[nut] * (1 + TOLERANCE)
+        # cycle on dishes
+        for j in range(len(probs[i].variables())):
+            # maximum number of servings for dish added
+            probs[i] += probs[i].variables()[j] <= 3
+
+    # integer problems list
+    int_probs = []
+
+    # cycle on problems
+    for i in range(0, len(probs)):
+
+        # cycle on previous problems
+        for j in range(0, i):
+
+            # cycle on previous problem dishes
+            for k in range(len(int_probs[j].variables())):
+
+                # entered if dish has already been chosen for a previous problem
+                # and it is not an unlimited dish
+                if int_probs[j].variables()[k].varValue and not unlimited_dish(
+                        str(int_probs[j].variables()[k]), unlimited_dishes):
+
+                    # dish quantity set to 0
+                    probs[i] += probs[i].variables()[k] == 0
+
+                # entered if dish is already chosen for one of the last two
+                # problems and it is an unlimited dish
+                if ((j == i - 1) or (j == i - 2)) and int_probs[j].variables()[
+                        k].varValue and unlimited_dish(str(int_probs[j].variables()[k]), unlimited_dishes):
+
+                    # dish quantity set to 0
+                    probs[i] += probs[i].variables()[k] == 0
+
+        # integer problem added to list
+        int_probs.append(probs[i])
+        # last problem solved
+        int_probs[-1].solve()
+
+    return int_probs
